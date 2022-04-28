@@ -1,27 +1,41 @@
-import { MongoClient } from 'mongodb';
+// our-domain.com/new-meetup
+import { Fragment } from 'react';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
 
-// /api/new-meetup
-// POST /api/new-meetup
+import NewMeetupForm from '../../components/meetups/NewMeetupForm';
 
-async function handler(req, res) {
-  if (req.method === 'POST') {
-    const data = req.body;
+function NewMeetupPage() {
+  const router = useRouter();
 
-    const client = await MongoClient.connect(
-      'mongodb+srv://kaori:Hdadn9A5j8Mei48G@cluster0.radfa.mongodb.net/meetups?retryWrites=true&w=majority'
-    );
-    const db = client.db();
+  async function addMeetupHandler(enteredMeetupData) {
+    const response = await fetch('/api/new-meetup', {
+      method: 'POST',
+      body: JSON.stringify(enteredMeetupData),
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
 
-    const meetupsCollection = db.collection('meetups');
+    const data = await response.json();
 
-    const result = await meetupsCollection.insertOne(data);
+    console.log(data);
 
-    console.log(result);
-
-    client.close();
-
-    res.status(201).json({ message: 'Meetup inserted!' });
+    router.push('/');
   }
+
+  return (
+    <Fragment>
+      <Head>
+        <title>Add a New Meetup</title>
+        <meta
+          name='description'
+          content='Add your own meetups and create amazing networking opportunities.'
+        />
+      </Head>
+      <NewMeetupForm onAddMeetup={addMeetupHandler} />
+    </Fragment>
+  );
 }
 
-export default handler;
+export default NewMeetupPage;
